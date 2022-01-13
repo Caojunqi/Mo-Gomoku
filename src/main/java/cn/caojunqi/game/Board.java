@@ -23,7 +23,7 @@ public class Board {
     /**
      * 棋盘长宽
      */
-    public static final int GRID_LENGTH = 10;
+    public static final int GRID_LENGTH = 6;
     /**
      * 棋盘上格子数量
      */
