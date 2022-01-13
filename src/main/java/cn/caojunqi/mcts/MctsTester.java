@@ -1,7 +1,6 @@
 package cn.caojunqi.mcts;
 
 import ai.djl.Model;
-import ai.djl.ndarray.NDManager;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.Trainer;
 import ai.djl.training.TrainingConfig;
@@ -12,7 +11,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * 五子棋模型测试类
@@ -21,15 +23,6 @@ import java.util.*;
  * @date 2022-01-13 11:59
  */
 public class MctsTester {
-
-	/**
-	 * NDArray主管理器
-	 */
-	private NDManager manager;
-	/**
-	 * 随机数生成器
-	 */
-	private Random random;
 	/**
 	 * 游戏环境
 	 */
@@ -45,9 +38,7 @@ public class MctsTester {
 	private boolean start;
 
 
-	public MctsTester(NDManager manager, Random random, Board gameEnv, boolean alphaFirst) {
-		this.manager = manager;
-		this.random = random;
+	public MctsTester(Board gameEnv, boolean alphaFirst) {
 		this.gameEnv = gameEnv;
 		this.alphaPlayerId = alphaFirst ? 0 : 1;
 
@@ -112,7 +103,7 @@ public class MctsTester {
 		Trainer trainer = opponentModel.newTrainer(config);
 		trainer.initialize(this.gameEnv.getStateShape());
 		trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
-		this.alphaAgent = new MctsAlphaAgent(this.manager.newSubManager(), this.random, trainer);
+		this.alphaAgent = new MctsAlphaAgent(trainer);
 	}
 
 	/**
@@ -136,7 +127,7 @@ public class MctsTester {
 
 	private Model buildBaseModel() {
 		Model policyModel = Model.newInstance(MctsParameter.GAME_NAME);
-		MctsBlock policyNet = new MctsBlock(this.manager.newSubManager(), this.random);
+		MctsBlock policyNet = new MctsBlock();
 		policyModel.setBlock(policyNet);
 		return policyModel;
 	}

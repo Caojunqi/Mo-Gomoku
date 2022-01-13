@@ -49,8 +49,8 @@ public class MctsAlphaCore {
 			acts[i] = entry.getKey();
 			visits[i] = entry.getValue().getVisits();
 		}
-		NDArray actsArr = gameEnv.getManager().create(acts);
-		NDArray visitsArr = gameEnv.getManager().create(visits);
+		NDArray actsArr = MctsSingleton.TEMP_MANAGER.create(acts);
+		NDArray visitsArr = MctsSingleton.TEMP_MANAGER.create(visits);
 		visitsArr = visitsArr.add(1e-10).log().mul(1 / MctsParameter.MCTS_TEMP).softmax(-1).toType(DataType.FLOAT32, false);
 		return new Tuple<>(actsArr, visitsArr);
 	}

@@ -14,8 +14,6 @@ import ai.djl.training.initializer.Initializer;
 import ai.djl.training.initializer.XavierInitializer;
 import ai.djl.util.PairList;
 
-import java.util.Random;
-
 /**
  * 五子棋神经网络
  *
@@ -23,20 +21,13 @@ import java.util.Random;
  * @date 2021-12-07 22:29
  */
 public class MctsBlock extends AbstractBlock {
-
-	private NDManager netManager;
-	private Random random;
-
 	private Block commonLayers;
 	private Block policyHeadConv;
 	private Block policyHeadDense;
 	private Block valueHeadConv;
 	private Block valueHeadDense;
 
-	public MctsBlock(NDManager netManager, Random random) {
-		this.netManager = netManager;
-		this.random = random;
-
+	public MctsBlock() {
 		this.commonLayers = addChildBlock("common_layers", buildCommonLayers());
 		this.policyHeadConv = addChildBlock("policy_head_conv", buildPolicyHeadConv());
 		this.policyHeadDense = addChildBlock("policy_head_dense", buildPolicyHeadDense());

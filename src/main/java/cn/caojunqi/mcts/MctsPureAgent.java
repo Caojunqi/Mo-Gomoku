@@ -7,7 +7,6 @@ import org.apache.commons.lang3.Validate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Function;
 
 /**
@@ -18,7 +17,7 @@ public class MctsPureAgent implements IAgent {
 
 	private MctsPureCore core;
 
-	public MctsPureAgent(Random random, int playout) {
+	public MctsPureAgent(int playout) {
 		Function<Board, Tuple<Map<Integer, Float>, Float>> policyValueFn = board -> {
 			List<Integer> availables = board.getAvailables();
 			float prob = 1 / (float) availables.size();
@@ -28,7 +27,7 @@ public class MctsPureAgent implements IAgent {
 			}
 			return new Tuple<>(actionProbs, 0f);
 		};
-		this.core = new MctsPureCore(random, policyValueFn, playout);
+		this.core = new MctsPureCore(policyValueFn, playout);
 	}
 
 	@Override

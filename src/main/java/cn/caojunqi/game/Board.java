@@ -9,9 +9,13 @@ import ai.djl.ndarray.types.DataType;
 import ai.djl.ndarray.types.Shape;
 import cn.caojunqi.common.Tuple;
 import cn.caojunqi.gui.GomokuBoardPane;
+import cn.caojunqi.mcts.MctsSingleton;
 import org.apache.commons.lang3.Validate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 五子棋棋盘
@@ -36,12 +40,6 @@ public class Board {
 	 * 玩家数量
 	 */
 	private static final int N_PLAYERS = 2;
-	private NDManager manager;
-	private Random random;
-	/**
-	 * 用于构建环境状态的管理器，可避免内存泄漏
-	 */
-	private NDManager observationManager;
 	/**
 	 * 落子信息
 	 */
@@ -64,13 +62,6 @@ public class Board {
 	private int curPlayerId;
 	private GomokuBoardPane boardPane;
 
-	public Board(NDManager manager, Random random) {
-		this.manager = manager;
-		this.random = random;
-		this.observationManager = this.manager.newSubManager();
-		reset();
-	}
-
 	/**
 	 * 游戏环境重置
 	 */
@@ -80,8 +71,7 @@ public class Board {
 		this.curPlayerId = 0;
 		this.turns = 0;
 		this.lastMove = -1;
-		this.observationManager.close();
-		this.observationManager = this.manager.newSubManager();
+		MctsSingleton.resetTempManager();
 	}
 
 	public void render() {
@@ -127,19 +117,21 @@ public class Board {
 
 		NDArray colourArr;
 		if (this.chessInfo.size() % 2 == 0) {
-			colourArr = this.observationManager.ones(new Shape(1, GRID_LENGTH, GRID_LENGTH), DataType.FLOAT32);
+			colourArr = MctsSingleton.TEMP_MANAGER.ones(new Shape(1, GRID_LENGTH, GRID_LENGTH), DataType.FLOAT32);
 		} else {
-			colourArr = this.observationManager.zeros(new Shape(1, GRID_LENGTH, GRID_LENGTH), DataType.FLOAT32);
+			colourArr = MctsSingleton.TEMP_MANAGER.zeros(new Shape(1, GRID_LENGTH, GRID_LENGTH), DataType.FLOAT32);
 		}
 
-		NDArray curPositionArr = this.observationManager.create(curPositions).expandDims(0);
-		NDArray oppoPositionArr = this.observationManager.create(oppoPositions).expandDims(0);
-		NDArray lastMoveArr = this.observationManager.create(lastMove).expandDims(0);
-		return curPositionArr.
+		NDArray curPositionArr = MctsSingleton.TEMP_MANAGER.create(curPositions).expandDims(0);
+		NDArray oppoPositionArr = MctsSingleton.TEMP_MANAGER.create(oppoPositions).expandDims(0);
+		NDArray lastMoveArr = MctsSingleton.TEMP_MANAGER.create(lastMove).expandDims(0);
+		NDArray result = curPositionArr.
 				concat(oppoPositionArr, 0).
 				concat(lastMoveArr, 0).
 				concat(colourArr, 0)
 				.expandDims(0);
+		result.attach(MctsSingleton.SAMPLE_MANAGER);
+		return result;
 	}
 
 	public void doMove(int move) {
@@ -158,13 +150,12 @@ public class Board {
 	}
 
 	public Board deepCopy() {
-		Board gameEnv = new Board(this.manager.newSubManager(), this.random);
+		Board gameEnv = new Board();
 		gameEnv.chessInfo = new HashMap<>(this.chessInfo);
 		gameEnv.availables = new ArrayList<>(this.availables);
 		gameEnv.turns = this.turns;
 		gameEnv.lastMove = lastMove;
 		gameEnv.curPlayerId = this.curPlayerId;
-		gameEnv.observationManager = this.observationManager.newSubManager();
 		gameEnv.boardPane = this.boardPane;
 		return gameEnv;
 	}
@@ -260,14 +251,6 @@ public class Board {
 	private boolean squareIsPlayer(int square, int playerId) {
 		Token token = this.chessInfo.get(square);
 		return token != null && token.playerId == playerId;
-	}
-
-	public NDManager getManager() {
-		return manager;
-	}
-
-	public Random getRandom() {
-		return random;
 	}
 
 	public Map<Integer, Token> getChessInfo() {

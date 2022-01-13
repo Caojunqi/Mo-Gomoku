@@ -1,5 +1,6 @@
 package cn.caojunqi;
 
+import ai.djl.engine.Engine;
 import cn.caojunqi.mcts.MctsTrainer;
 
 /**
@@ -11,6 +12,7 @@ import cn.caojunqi.mcts.MctsTrainer;
 public class TestStart {
 
 	public static void main(String[] args) {
+		Engine.getInstance().setRandomSeed(0);
 		MctsTrainer mctsTrainer = new MctsTrainer();
 		mctsTrainer.run();
 	}

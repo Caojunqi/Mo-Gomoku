@@ -4,7 +4,6 @@ import ai.djl.Model;
 import ai.djl.engine.Engine;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
-import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.GradientCollector;
@@ -24,7 +23,6 @@ import cn.caojunqi.game.MctsBlock;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Random;
 
 /**
  * 五子棋模型训练类
@@ -33,8 +31,6 @@ import java.util.Random;
  * @date 2022-01-11 20:53
  */
 public class MctsTrainer {
-	private NDManager mainManager;
-	private Random random;
 	private Game game;
 	private MctsLearningRateTracker tracker;
 	private Trainer trainer;
@@ -44,14 +40,11 @@ public class MctsTrainer {
 	private int pureMctsPlayoutNum;
 
 	public MctsTrainer() {
-		Engine.getInstance().setRandomSeed(0);
-		this.random = new Random(0);
-		this.mainManager = NDManager.newBaseManager();
-		Board board = new Board(this.mainManager.newSubManager(), this.random);
+		Board board = new Board();
 		this.game = new Game(board);
 		this.tracker = new MctsLearningRateTracker();
 		this.trainer = buildTrainer(board);
-		this.agent = new MctsAlphaAgent(this.mainManager.newSubManager(), this.random, this.trainer);
+		this.agent = new MctsAlphaAgent(this.trainer);
 		this.dataBuffer = new DataBuffer(MctsParameter.BUFFER_SIZE);
 		this.pureMctsPlayoutNum = MctsParameter.PURE_MCTS_PLAYOUT_NUM;
 	}
@@ -147,7 +140,7 @@ public class MctsTrainer {
 	}
 
 	private Trainer buildTrainer(Board board) {
-		Model model = buildBaseModel(this.mainManager.newSubManager(), random);
+		Model model = buildBaseModel();
 		TrainingConfig config = new DefaultTrainingConfig(Loss.l2Loss())
 				.optOptimizer(Adam.builder().optLearningRateTracker(this.tracker).build());
 		Trainer trainer = model.newTrainer(config);
@@ -156,9 +149,9 @@ public class MctsTrainer {
 		return trainer;
 	}
 
-	private Model buildBaseModel(NDManager manager, Random random) {
+	private Model buildBaseModel() {
 		Model policyModel = Model.newInstance(MctsParameter.GAME_NAME);
-		MctsBlock policyNet = new MctsBlock(manager, random);
+		MctsBlock policyNet = new MctsBlock();
 		policyModel.setBlock(policyNet);
 		return policyModel;
 	}
@@ -184,20 +177,20 @@ public class MctsTrainer {
 		for (SampleData data : playGameData.getDatas()) {
 			for (int i : rotTimes) {
 				// 逆时针旋转90度
-				NDArray augmentState = data.getState().rotate90(i, new int[]{1, 2});
+				NDArray augmentState = data.getState().rotate90(i, new int[]{2, 3});
 				NDArray augmentMctsProbs = data.getMctsProbs().reshape(new Shape(Board.GRID_LENGTH, Board.GRID_LENGTH)).rotate90(i, new int[]{0, 1});
 				this.dataBuffer.cacheData(new SampleData(augmentState, augmentMctsProbs.flatten(), data.getWinner()));
 
 				//  水平翻转
-				augmentState = augmentState.flip(2);
+				augmentState = augmentState.flip(3);
 				augmentMctsProbs = augmentMctsProbs.flip(1);
-				this.dataBuffer.cacheData(new SampleData(augmentState, augmentMctsProbs, data.getWinner()));
+				this.dataBuffer.cacheData(new SampleData(augmentState, augmentMctsProbs.flatten(), data.getWinner()));
 			}
 		}
 	}
 
 	private float policyEvaluate() {
-		MctsPureAgent pureAgent = new MctsPureAgent(this.random, this.pureMctsPlayoutNum);
+		MctsPureAgent pureAgent = new MctsPureAgent(this.pureMctsPlayoutNum);
 		int winNum = 0;
 		int tieNum = 0;
 		for (int i = 0; i < MctsParameter.POLICY_EVALUATE_GAMES; i++) {

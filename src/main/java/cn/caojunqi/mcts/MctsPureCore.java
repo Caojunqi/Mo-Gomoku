@@ -5,7 +5,6 @@ import cn.caojunqi.game.Board;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Function;
 
 /**
@@ -16,13 +15,11 @@ import java.util.function.Function;
  */
 public class MctsPureCore {
 
-	private Random random;
 	private TreeNode root;
 	private Function<Board, Tuple<Map<Integer, Float>, Float>> policyValueFn;
 	private int playout;
 
-	public MctsPureCore(Random random, Function<Board, Tuple<Map<Integer, Float>, Float>> policyValueFn, int playout) {
-		this.random = random;
+	public MctsPureCore(Function<Board, Tuple<Map<Integer, Float>, Float>> policyValueFn, int playout) {
 		this.root = new TreeNode(null, 1.0f);
 		this.policyValueFn = policyValueFn;
 		this.playout = playout;
@@ -135,7 +132,7 @@ public class MctsPureCore {
 		float maxProb = -1;
 		int maxAction = -1;
 		for (int action : board.getAvailables()) {
-			float randomProb = this.random.nextFloat();
+			float randomProb = MctsSingleton.RANDOM.nextFloat();
 			if (randomProb > maxProb) {
 				maxProb = randomProb;
 				maxAction = action;

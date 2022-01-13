@@ -1,6 +1,5 @@
 package cn.caojunqi.gui;
 
-import ai.djl.ndarray.NDManager;
 import cn.caojunqi.game.Board;
 import cn.caojunqi.mcts.MctsTester;
 import javafx.event.EventHandler;
@@ -38,7 +37,6 @@ public class GomokuBoardPane extends Pane {
 			new Stop(1, Color.web("#222")),
 			new Stop(0, Color.web("#A0A0A0"))
 	);
-	private NDManager manager;
 	private MctsTester tester;
 	private Canvas canvas;
 	// 绘图数据
@@ -47,8 +45,7 @@ public class GomokuBoardPane extends Pane {
 	private double paddingY;
 	private double cellSize;
 
-	public GomokuBoardPane(NDManager manager, MctsTester tester) {
-		this.manager = manager;
+	public GomokuBoardPane(MctsTester tester) {
 		this.tester = tester;
 		this.gridLength = Board.GRID_LENGTH;
 		this.canvas = new Canvas();

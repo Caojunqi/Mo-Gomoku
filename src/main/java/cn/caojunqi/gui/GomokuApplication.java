@@ -1,6 +1,5 @@
 package cn.caojunqi.gui;
 
-import ai.djl.ndarray.NDManager;
 import cn.caojunqi.game.Board;
 import cn.caojunqi.mcts.MctsTester;
 import javafx.application.Application;
@@ -12,8 +11,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-
-import java.util.Random;
 
 /**
  * 五子棋应用
@@ -30,12 +27,10 @@ public class GomokuApplication extends Application {
 		Font.loadFont(getClass().getClassLoader().getResource
 				(GOMOKU_GUI_RESOURCE_DIR + "FontAwesome.otf").toExternalForm(), 10);
 
-		Random random = new Random(0);
-		NDManager mainManager = NDManager.newBaseManager();
-		Board gameEnv = new Board(mainManager.newSubManager(), random);
-		MctsTester tester = new MctsTester(mainManager.newSubManager(), random, gameEnv, true);
+		Board gameEnv = new Board();
+		MctsTester tester = new MctsTester(gameEnv, true);
 
-		Pane gomokuPane = loadGomokuPane(mainManager, tester);
+		Pane gomokuPane = loadGomokuPane(tester);
 
 		primaryStage.setTitle("Gomoku");
 		primaryStage.setScene(new Scene(gomokuPane, 800, 600));
@@ -46,9 +41,9 @@ public class GomokuApplication extends Application {
 		primaryStage.show();
 	}
 
-	private Pane loadGomokuPane(NDManager mainManager, MctsTester tester) {
+	private Pane loadGomokuPane(MctsTester tester) {
 		BorderPane gomokuPane = new BorderPane();
-		GomokuBoardPane boardPane = new GomokuBoardPane(mainManager.newSubManager(), tester);
+		GomokuBoardPane boardPane = new GomokuBoardPane(tester);
 		gomokuPane.setCenter(boardPane);
 		tester.getGameEnv().setBoardPane(boardPane);
 
