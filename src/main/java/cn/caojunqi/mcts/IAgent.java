@@ -10,5 +10,5 @@ import cn.caojunqi.game.Board;
  */
 public interface IAgent {
 
-    int getAction(Board board);
+	int getAction(Board board);
 }

@@ -10,22 +10,22 @@ import ai.djl.training.tracker.Tracker;
  */
 public class MctsLearningRateTracker implements Tracker {
 
-    private float lrMultiplier;
+	private float lrMultiplier;
 
-    public MctsLearningRateTracker() {
-        this.lrMultiplier = MctsParameter.LR_MULTIPLIER;
-    }
+	public MctsLearningRateTracker() {
+		this.lrMultiplier = MctsParameter.LR_MULTIPLIER;
+	}
 
-    @Override
-    public float getNewValue(int numUpdate) {
-        return MctsParameter.LEARN_RATE * lrMultiplier;
-    }
+	@Override
+	public float getNewValue(int numUpdate) {
+		return MctsParameter.LEARN_RATE * lrMultiplier;
+	}
 
-    public float getLrMultiplier() {
-        return lrMultiplier;
-    }
+	public float getLrMultiplier() {
+		return lrMultiplier;
+	}
 
-    public void setLrMultiplier(float lrMultiplier) {
-        this.lrMultiplier = lrMultiplier;
-    }
+	public void setLrMultiplier(float lrMultiplier) {
+		this.lrMultiplier = lrMultiplier;
+	}
 }

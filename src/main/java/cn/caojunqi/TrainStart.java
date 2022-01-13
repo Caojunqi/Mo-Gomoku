@@ -10,8 +10,8 @@ import cn.caojunqi.mcts.MctsTrainer;
  */
 public class TrainStart {
 
-    public static void main(String[] args) {
-        MctsTrainer mctsTrainer = new MctsTrainer();
-        mctsTrainer.run();
-    }
+	public static void main(String[] args) {
+		MctsTrainer mctsTrainer = new MctsTrainer();
+		mctsTrainer.run();
+	}
 }

@@ -16,27 +16,27 @@ import java.util.function.Function;
  */
 public class MctsPureAgent implements IAgent {
 
-    private MctsPureCore core;
+	private MctsPureCore core;
 
-    public MctsPureAgent(Random random, int playout) {
-        Function<Board, Tuple<Map<Integer, Float>, Float>> policyValueFn = board -> {
-            List<Integer> availables = board.getAvailables();
-            float prob = 1 / (float) availables.size();
-            Map<Integer, Float> actionProbs = new HashMap<>(availables.size());
-            for (int available : availables) {
-                actionProbs.put(available, prob);
-            }
-            return new Tuple<>(actionProbs, 0f);
-        };
-        this.core = new MctsPureCore(random, policyValueFn, playout);
-    }
+	public MctsPureAgent(Random random, int playout) {
+		Function<Board, Tuple<Map<Integer, Float>, Float>> policyValueFn = board -> {
+			List<Integer> availables = board.getAvailables();
+			float prob = 1 / (float) availables.size();
+			Map<Integer, Float> actionProbs = new HashMap<>(availables.size());
+			for (int available : availables) {
+				actionProbs.put(available, prob);
+			}
+			return new Tuple<>(actionProbs, 0f);
+		};
+		this.core = new MctsPureCore(random, policyValueFn, playout);
+	}
 
-    @Override
-    public int getAction(Board board) {
-        List<Integer> availables = board.getAvailables();
-        Validate.isTrue(!availables.isEmpty());
-        int move = this.core.getMove(board);
-        this.core.updateWithMove(-1);
-        return move;
-    }
+	@Override
+	public int getAction(Board board) {
+		List<Integer> availables = board.getAvailables();
+		Validate.isTrue(!availables.isEmpty());
+		int move = this.core.getMove(board);
+		this.core.updateWithMove(-1);
+		return move;
+	}
 }

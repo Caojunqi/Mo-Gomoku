@@ -7,11 +7,11 @@ package cn.caojunqi.common;
  * @date 2021-11-22 16:42
  */
 public class Tuple<First, Second> {
-    public final First first;
-    public final Second second;
+	public final First first;
+	public final Second second;
 
-    public Tuple(First first, Second second) {
-        this.first = first;
-        this.second = second;
-    }
+	public Tuple(First first, Second second) {
+		this.first = first;
+		this.second = second;
+	}
 }

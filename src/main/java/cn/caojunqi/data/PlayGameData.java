@@ -14,18 +14,18 @@ import java.util.List;
  */
 public class PlayGameData {
 
-    private List<SampleData> datas;
+	private List<SampleData> datas;
 
-    public PlayGameData(List<NDArray> states, List<NDArray> mctsProbs, float[] winners) {
-        Validate.isTrue(states.size() == mctsProbs.size() && states.size() == winners.length, "一局棋数据有误！！");
-        int size = states.size();
-        this.datas = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            this.datas.add(new SampleData(states.get(i), mctsProbs.get(1), winners[i]));
-        }
-    }
+	public PlayGameData(List<NDArray> states, List<NDArray> mctsProbs, float[] winners) {
+		Validate.isTrue(states.size() == mctsProbs.size() && states.size() == winners.length, "一局棋数据有误！！");
+		int size = states.size();
+		this.datas = new ArrayList<>(size);
+		for (int i = 0; i < size; i++) {
+			this.datas.add(new SampleData(states.get(i), mctsProbs.get(1), winners[i]));
+		}
+	}
 
-    public List<SampleData> getDatas() {
-        return datas;
-    }
+	public List<SampleData> getDatas() {
+		return datas;
+	}
 }
