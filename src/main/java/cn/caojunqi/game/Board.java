@@ -1,10 +1,6 @@
 package cn.caojunqi.game;
 
-import ai.djl.modality.rl.ActionSpace;
-import ai.djl.modality.rl.env.RlEnv;
 import ai.djl.ndarray.NDArray;
-import ai.djl.ndarray.NDList;
-import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.DataType;
 import ai.djl.ndarray.types.Shape;
 import cn.caojunqi.common.Tuple;
@@ -326,61 +322,4 @@ public class Board {
 		}
 	}
 
-	static final class GomokuStep implements RlEnv.Step {
-		private NDManager manager;
-		private ActionSpace actionSpace;
-		private NDList preState;
-		private NDList postState;
-		private NDList action;
-		private float[] reward;
-		private boolean done;
-
-		private GomokuStep(NDManager manager, ActionSpace actionSpace, NDList preState, NDList postState, NDList action, float[] reward, boolean done) {
-			this.manager = manager;
-			this.actionSpace = actionSpace;
-			this.preState = preState;
-			this.preState.attach(this.manager);
-			this.postState = postState;
-			this.postState.attach(this.manager);
-			this.action = action;
-			this.action.attach(this.manager);
-			this.reward = reward;
-			this.done = done;
-		}
-
-		@Override
-		public NDList getPreObservation() {
-			return preState;
-		}
-
-		@Override
-		public NDList getAction() {
-			return action;
-		}
-
-		@Override
-		public NDList getPostObservation() {
-			return postState;
-		}
-
-		@Override
-		public ActionSpace getPostActionSpace() {
-			return actionSpace;
-		}
-
-		@Override
-		public NDArray getReward() {
-			return manager.create(reward);
-		}
-
-		@Override
-		public boolean isDone() {
-			return done;
-		}
-
-		@Override
-		public void close() {
-			manager.close();
-		}
-	}
 }
