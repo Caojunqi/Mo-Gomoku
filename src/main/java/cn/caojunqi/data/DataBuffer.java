@@ -5,9 +5,9 @@ import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
 import ai.djl.translate.Batchifier;
 import cn.caojunqi.common.Triple;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang3.Validate;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,13 +20,21 @@ import java.util.List;
  */
 public class DataBuffer {
 
-	private CircularFifoQueue<SampleData> datas;
+	private int maxSize;
+	private ArrayDeque<SampleData> datas;
 
 	public DataBuffer(int maxSize) {
-		datas = new CircularFifoQueue<>(maxSize);
+		this.maxSize = maxSize;
+		this.datas = new ArrayDeque<>(maxSize);
 	}
 
 	public void cacheData(SampleData data) {
+		Validate.isTrue(size() <= maxSize);
+		if (size() == maxSize) {
+			SampleData removeData = this.datas.removeFirst();
+			removeData.close();
+		}
+		Validate.isTrue(size() < maxSize);
 		this.datas.add(data);
 	}
 

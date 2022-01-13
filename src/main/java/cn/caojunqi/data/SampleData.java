@@ -29,6 +29,14 @@ public class SampleData {
 		this.winner = winner;
 	}
 
+	/**
+	 * 释放数组资源
+	 */
+	public void close() {
+		this.state.close();
+		this.mctsProbs.close();
+	}
+
 	public NDArray getState() {
 		return state;
 	}
