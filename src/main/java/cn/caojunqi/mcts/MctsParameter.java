@@ -29,7 +29,7 @@ public final class MctsParameter {
 
 	public static final int PLAY_BATCH_SIZE = 1;
 
-	public static final int BUFFER_SIZE = 10000;
+	public static final int BUFFER_SIZE = 1000;
 
 	public static final int BATCH_SIZE = 512;
 	/**
