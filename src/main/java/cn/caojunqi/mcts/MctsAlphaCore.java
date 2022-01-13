@@ -1,8 +1,10 @@
 package cn.caojunqi.mcts;
 
 import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.types.DataType;
 import cn.caojunqi.common.Tuple;
 import cn.caojunqi.game.Board;
+import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +51,7 @@ public class MctsAlphaCore {
         }
         NDArray actsArr = gameEnv.getManager().create(acts);
         NDArray visitsArr = gameEnv.getManager().create(visits);
-        visitsArr = visitsArr.add(1e-10).log().mul(1 / MctsParameter.MCTS_TEMP).softmax(-1);
+        visitsArr = visitsArr.add(1e-10).log().mul(1 / MctsParameter.MCTS_TEMP).softmax(-1).toType(DataType.FLOAT32, false);
         return new Tuple<>(actsArr, visitsArr);
     }
 
@@ -64,6 +66,7 @@ public class MctsAlphaCore {
             this.root = child;
             this.root.setParent(null);
         } else {
+            Validate.isTrue(lastMove == -1);
             this.root = new TreeNode(null, 1);
         }
     }
@@ -81,6 +84,7 @@ public class MctsAlphaCore {
             // Greedily select next move.
             Tuple<Integer, TreeNode> selectResult = node.select();
             board.doMove(selectResult.first);
+            node = selectResult.second;
         }
 
         Tuple<Map<Integer, Float>, Float> policy = this.policyValueFn.apply(board);

@@ -169,6 +169,7 @@ public class MctsTrainer {
     private void collectSelfplayData() {
         for (int i = 0; i < MctsParameter.PLAY_BATCH_SIZE; i++) {
             PlayGameData playGameData = this.game.startSelfPlay(this.agent);
+            System.out.println("收集数据[" + i + "]，数据量[" + playGameData.getDatas().size() + "]");
             augmentData(playGameData);
         }
     }

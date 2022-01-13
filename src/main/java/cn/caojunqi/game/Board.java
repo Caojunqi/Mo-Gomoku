@@ -138,7 +138,8 @@ public class Board {
         return curPositionArr.
                 concat(oppoPositionArr, 0).
                 concat(lastMoveArr, 0).
-                concat(colourArr, 0);
+                concat(colourArr, 0)
+                .expandDims(0);
     }
 
     public void doMove(int move) {
@@ -159,8 +160,10 @@ public class Board {
     public Board deepCopy() {
         Board gameEnv = new Board(this.manager.newSubManager(), this.random);
         gameEnv.chessInfo = new HashMap<>(this.chessInfo);
+        gameEnv.availables = new ArrayList<>(this.availables);
         gameEnv.turns = this.turns;
         gameEnv.lastMove = lastMove;
+        gameEnv.curPlayerId = this.curPlayerId;
         gameEnv.observationManager = this.observationManager.newSubManager();
         gameEnv.boardPane = this.boardPane;
         return gameEnv;

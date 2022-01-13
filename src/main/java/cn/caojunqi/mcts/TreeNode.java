@@ -54,7 +54,7 @@ public class TreeNode {
     }
 
     public Tuple<Integer, TreeNode> select() {
-        float maxValue = Float.MIN_VALUE;
+        float maxValue = Float.NEGATIVE_INFINITY;
         Map.Entry<Integer, TreeNode> bestChild = null;
         for (Map.Entry<Integer, TreeNode> child : children.entrySet()) {
             float childValue = child.getValue().getValue();
@@ -88,7 +88,7 @@ public class TreeNode {
     public void updateRecursive(float leafValue) {
         // If it is not root, this node's parent should be updated first.
         if (!isRoot()) {
-            this.parent.updateRecursive(leafValue);
+            this.parent.updateRecursive(-leafValue);
         }
         update(leafValue);
     }

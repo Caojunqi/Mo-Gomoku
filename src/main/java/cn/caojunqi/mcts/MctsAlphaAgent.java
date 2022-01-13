@@ -64,7 +64,7 @@ public class MctsAlphaAgent implements IAgent {
     public Tuple<Integer, NDArray> chooseAction(Board board, boolean training) {
         Tuple<NDArray, NDArray> actProbs = this.core.getMoveProbs(board);
         NDArray moveProbs = this.agentManager.zeros(new Shape(Board.NUM_SQUARES));
-        int availableActionSize = (int) actProbs.first.getShape().get(-1);
+        int availableActionSize = board.getAvailables().size();
         for (int i = 0; i < availableActionSize; i++) {
             moveProbs.set(new NDIndex(actProbs.first.getInt(i)), actProbs.second.getFloat(i));
         }
@@ -78,13 +78,15 @@ public class MctsAlphaAgent implements IAgent {
             double[] dirichletResult = dirichletSample.get(0).arrayCopy();
             NDArray dirichletRandomArr = this.agentManager.create(dirichletResult).toType(DataType.FLOAT32, false);
             NDArray finalActProbs = actProbs.second.mul(0.75).add(dirichletRandomArr.mul(0.25));
-            action = GomokuUtils.sampleMultinomial(finalActProbs, random);
+            int actionIndex = GomokuUtils.sampleMultinomial(finalActProbs, random);
+            action = actProbs.first.get(actionIndex).getInt();
             this.core.updateWithMove(action);
         } else {
-            action = GomokuUtils.sampleMultinomial(actProbs.second, random);
+            int actionIndex = GomokuUtils.sampleMultinomial(actProbs.second, random);
+            action = actProbs.first.get(actionIndex).getInt();
             this.core.updateWithMove(-1);
         }
-        return new Tuple<>(actProbs.first.get(action).getInt(), moveProbs);
+        return new Tuple<>(action, moveProbs);
     }
 
     /**

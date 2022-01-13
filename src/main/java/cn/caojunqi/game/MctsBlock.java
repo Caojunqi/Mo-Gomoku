@@ -3,7 +3,6 @@ package cn.caojunqi.game;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
-import ai.djl.ndarray.index.NDIndex;
 import ai.djl.ndarray.types.DataType;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.nn.*;
@@ -47,9 +46,7 @@ public class MctsBlock extends AbstractBlock {
 
     @Override
     protected NDList forwardInternal(ParameterStore parameterStore, NDList inputs, boolean training, PairList<String, Object> params) {
-        NDArray obs = inputs.singletonOrThrow().get(new NDIndex(":,0:4,:,:"));
-
-        NDList x = this.commonLayers.forward(parameterStore, new NDList(obs), training);
+        NDList x = this.commonLayers.forward(parameterStore, inputs, training);
 
         NDList policyConv = this.policyHeadConv.forward(parameterStore, x, training);
         NDList policyFlatten = new NDList(policyConv.get(0).reshape(policyConv.get(0).getShape().get(0), -1));

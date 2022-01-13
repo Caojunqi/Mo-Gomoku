@@ -81,6 +81,7 @@ public class MctsPureCore {
             // Greedily select next move.
             Tuple<Integer, TreeNode> selectResult = node.select();
             board.doMove(selectResult.first);
+            node = selectResult.second;
         }
         Map<Integer, Float> actionProbs = this.policyValueFn.apply(board).first;
         // Check for end of game
