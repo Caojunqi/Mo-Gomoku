@@ -28,6 +28,11 @@ public class MctsSingleton {
 	 */
 	public static NDManager NET_MANAGER = NDManager.newBaseManager();
 
+	public static void resetSampleManager() {
+		SAMPLE_MANAGER.close();
+		SAMPLE_MANAGER = NDManager.newBaseManager();
+	}
+
 	public static void resetTempManager() {
 		TEMP_MANAGER.close();
 		TEMP_MANAGER = NDManager.newBaseManager();

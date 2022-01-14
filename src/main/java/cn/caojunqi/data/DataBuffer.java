@@ -5,6 +5,7 @@ import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
 import ai.djl.translate.Batchifier;
 import cn.caojunqi.common.Triple;
+import cn.caojunqi.mcts.MctsSingleton;
 import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayDeque;
@@ -66,6 +67,11 @@ public class DataBuffer {
 		return new Triple<>(Batchifier.STACK.batchify(stateList).singletonOrThrow(),
 				Batchifier.STACK.batchify(mctsProbList).singletonOrThrow(),
 				manager.create(winnerList));
+	}
+
+	public void clear() {
+		this.datas.clear();
+		MctsSingleton.resetSampleManager();
 	}
 
 	/**

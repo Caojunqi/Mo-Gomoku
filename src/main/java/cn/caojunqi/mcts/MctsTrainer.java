@@ -55,6 +55,7 @@ public class MctsTrainer {
 			if (this.dataBuffer.size() > MctsParameter.BATCH_SIZE) {
 				Triple<NDArray, NDArray, NDArray> miniBatch = this.dataBuffer.randomSample(MctsParameter.BATCH_SIZE);
 				trainBatch(miniBatch.first, miniBatch.second, miniBatch.third);
+				this.dataBuffer.clear();
 			}
 			if ((i + 1) % MctsParameter.CHECK_FREQ == 0) {
 				float winRatio = policyEvaluate();
