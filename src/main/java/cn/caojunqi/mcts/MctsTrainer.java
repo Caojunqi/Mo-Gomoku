@@ -63,6 +63,7 @@ public class MctsTrainer {
 					this.bestWinRatio = winRatio;
 					// update the best policy
 					saveModel();
+					System.out.println("新模型诞生，对手搜索深度[" + this.pureMctsPlayoutNum + "]，胜率[" + winRatio + "]");
 					if (this.bestWinRatio == 1.0 && this.pureMctsPlayoutNum < MctsParameter.MAX_PURE_MCTS_PLAYOUT_NUM) {
 						this.pureMctsPlayoutNum += 1000;
 						this.bestWinRatio = 0.0f;
@@ -163,7 +164,7 @@ public class MctsTrainer {
 	private void collectSelfplayData() {
 		for (int i = 0; i < MctsParameter.PLAY_BATCH_SIZE; i++) {
 			PlayGameData playGameData = this.game.startSelfPlay(this.agent);
-			System.out.println("收集数据[" + i + "]，数据量[" + playGameData.getDatas().size() + "]");
+			System.out.println("收集对局样本，数据量[" + playGameData.getDatas().size() + "]");
 			augmentData(playGameData);
 		}
 	}
