@@ -177,12 +177,12 @@ public class MctsTrainer {
 		for (SampleData data : playGameData.getDatas()) {
 			for (int i : rotTimes) {
 				// 逆时针旋转90度
-				NDArray augmentState = data.getState().rotate90(i, new int[]{2, 3});
+				NDArray augmentState = data.getState().rotate90(i, new int[]{1, 2});
 				NDArray augmentMctsProbs = data.getMctsProbs().reshape(new Shape(Board.GRID_LENGTH, Board.GRID_LENGTH)).rotate90(i, new int[]{0, 1});
 				this.dataBuffer.cacheData(new SampleData(augmentState, augmentMctsProbs.flatten(), data.getWinner()));
 
 				//  水平翻转
-				augmentState = augmentState.flip(3);
+				augmentState = augmentState.flip(2);
 				augmentMctsProbs = augmentMctsProbs.flip(1);
 				this.dataBuffer.cacheData(new SampleData(augmentState, augmentMctsProbs.flatten(), data.getWinner()));
 			}

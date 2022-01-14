@@ -2,6 +2,7 @@ package cn.caojunqi.util;
 
 import ai.djl.ndarray.NDArray;
 import cn.caojunqi.mcts.MctsSingleton;
+import org.apache.commons.lang3.Validate;
 
 /**
  * 五子棋工具类
@@ -18,13 +19,12 @@ public final class GomokuUtils {
 	 * @return 选中的动作
 	 */
 	public static int sampleMultinomial(NDArray distribution) {
-		// 剔除掉多余的维度
-		NDArray squeezeDistribution = distribution.squeeze();
+		Validate.isTrue(distribution.getShape().dimension() == 1);
 		int value = 0;
-		long size = squeezeDistribution.size();
+		long size = distribution.size();
 		float rnd = MctsSingleton.RANDOM.nextFloat();
 		for (int i = 0; i < size; i++) {
-			float cut = squeezeDistribution.getFloat(value);
+			float cut = distribution.getFloat(value);
 			if (rnd > cut) {
 				value++;
 			} else {

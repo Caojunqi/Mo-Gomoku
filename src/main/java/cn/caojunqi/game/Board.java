@@ -124,8 +124,7 @@ public class Board {
 		NDArray result = curPositionArr.
 				concat(oppoPositionArr, 0).
 				concat(lastMoveArr, 0).
-				concat(colourArr, 0)
-				.expandDims(0);
+				concat(colourArr, 0);
 		result.attach(MctsSingleton.SAMPLE_MANAGER);
 		return result;
 	}
