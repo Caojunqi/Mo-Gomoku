@@ -11,16 +11,16 @@ import ai.djl.ndarray.NDManager;
  */
 public class MainTest {
 
-    public static void main(String[] args) {
-        NDManager manager = NDManager.newBaseManager();
+	public static void main(String[] args) {
+		NDManager manager = NDManager.newBaseManager();
 
-        int[][] data = new int[][]{
-                {1, 2},
-                {3, 4}
-        };
+		int[][] data = new int[][]{
+				{1, 2},
+				{3, 4}
+		};
 
-        NDArray array = manager.create(data);
-        NDArray newArr = array.reshape(-1);
-        System.out.println("cc");
-    }
+		NDArray array = manager.create(data);
+		NDArray newArr = array.reshape(-1);
+		System.out.println("cc");
+	}
 }
