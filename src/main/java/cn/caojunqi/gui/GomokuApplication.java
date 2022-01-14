@@ -20,7 +20,7 @@ import javafx.stage.Stage;
  */
 public class GomokuApplication extends Application {
 
-	private final static String GOMOKU_GUI_RESOURCE_DIR = "demo/gomoku/";
+	private final static String GOMOKU_GUI_RESOURCE_DIR = "gui/";
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
