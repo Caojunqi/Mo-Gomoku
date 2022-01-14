@@ -58,6 +58,10 @@ public class Board {
 	private int curPlayerId;
 	private GomokuBoardPane boardPane;
 
+	public Board() {
+		reset();
+	}
+
 	/**
 	 * 游戏环境重置
 	 */
