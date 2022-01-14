@@ -6,15 +6,8 @@ import ai.djl.training.Trainer;
 import ai.djl.training.TrainingConfig;
 import ai.djl.training.loss.Loss;
 import cn.caojunqi.game.Board;
-import cn.caojunqi.game.MctsBlock;
-import org.apache.commons.io.FileUtils;
+import cn.caojunqi.util.ModelBuilder;
 import org.apache.commons.lang3.Validate;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * 五子棋模型测试类
@@ -98,38 +91,13 @@ public class MctsTester {
 	 * 构建对手
 	 */
 	private void setupOpponents() {
-		Model opponentModel = loadOpponentModel();
+		Model opponentModel = ModelBuilder.buildBestModel();
+		Validate.notNull(opponentModel, "没有训练好的模型，不能进行性能测试");
 		TrainingConfig config = new DefaultTrainingConfig(Loss.l2Loss());
 		Trainer trainer = opponentModel.newTrainer(config);
 		trainer.initialize(this.gameEnv.getStateShape());
 		trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
 		this.alphaAgent = new MctsAlphaAgent(trainer);
-	}
-
-	/**
-	 * 加载训练好的模型
-	 */
-	private Model loadOpponentModel() {
-		File modelDir = new File(MctsParameter.MODEL_DIR + MctsParameter.GAME_NAME + MctsParameter.DIR_SEPARATOR);
-		Collection<File> modelFiles = FileUtils.listFiles(modelDir, null, true);
-		Validate.isTrue(!modelFiles.isEmpty(), "没有训练好的模型，不能进行性能测试！！");
-		List<File> sortedFiles = new ArrayList<>(modelFiles);
-		sortedFiles.sort(Comparator.comparing(File::getName));
-		try {
-			File bestModelFileDir = new File(MctsParameter.MODEL_DIR + MctsParameter.GAME_NAME + MctsParameter.DIR_SEPARATOR);
-			Model bestModel = buildBaseModel();
-			bestModel.load(bestModelFileDir.toPath(), MctsParameter.BEST_MODEL_PREFIX, null);
-			return bestModel;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private Model buildBaseModel() {
-		Model policyModel = Model.newInstance(MctsParameter.GAME_NAME);
-		MctsBlock policyNet = new MctsBlock();
-		policyModel.setBlock(policyNet);
-		return policyModel;
 	}
 
 	public Board getGameEnv() {

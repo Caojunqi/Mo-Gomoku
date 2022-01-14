@@ -18,7 +18,7 @@ import cn.caojunqi.data.PlayGameData;
 import cn.caojunqi.data.SampleData;
 import cn.caojunqi.game.Board;
 import cn.caojunqi.game.Game;
-import cn.caojunqi.game.MctsBlock;
+import cn.caojunqi.util.ModelBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -142,20 +142,16 @@ public class MctsTrainer {
 	}
 
 	private Trainer buildTrainer(Board board) {
-		Model model = buildBaseModel();
+		Model model = ModelBuilder.buildBestModel();
+		if (model == null) {
+			model = ModelBuilder.buildBaseModel();
+		}
 		TrainingConfig config = new DefaultTrainingConfig(Loss.l2Loss())
 				.optOptimizer(Adam.builder().optLearningRateTracker(this.tracker).build());
 		Trainer trainer = model.newTrainer(config);
 		trainer.initialize(board.getStateShape());
 		trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
 		return trainer;
-	}
-
-	private Model buildBaseModel() {
-		Model policyModel = Model.newInstance(MctsParameter.GAME_NAME);
-		MctsBlock policyNet = new MctsBlock();
-		policyModel.setBlock(policyNet);
-		return policyModel;
 	}
 
 	/**
