@@ -147,7 +147,7 @@ public class MctsTrainer {
 			model = ModelBuilder.buildBaseModel();
 		}
 		TrainingConfig config = new DefaultTrainingConfig(Loss.l2Loss())
-				.optOptimizer(Adam.builder().optLearningRateTracker(this.tracker).build());
+				.optOptimizer(Adam.builder().optLearningRateTracker(this.tracker).optWeightDecays(MctsParameter.L2_CONST).build());
 		Trainer trainer = model.newTrainer(config);
 		trainer.initialize(board.getStateShape());
 		trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));

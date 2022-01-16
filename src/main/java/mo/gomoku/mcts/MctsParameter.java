@@ -19,11 +19,15 @@ public final class MctsParameter {
 	/**
 	 * temperature parameter in (0,1] controls the level of exploration in MCTS
 	 */
-	public static final float MCTS_TEMP = 1e-3f;
+	public static final float MCTS_TEMP = 1.0f;
 
 	public static final float LEARN_RATE = 2e-3f;
 
 	public static final float LR_MULTIPLIER = 1.0f;
+	/**
+	 * coef of l2 penalty
+	 */
+	public static final float L2_CONST = 1e-4f;
 
 	public static final int GAME_BATCH_NUM = 1500;
 

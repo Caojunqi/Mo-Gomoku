@@ -2,7 +2,6 @@ package mo.gomoku.mcts;
 
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDManager;
-import ai.djl.ndarray.types.DataType;
 import mo.gomoku.common.Tuple;
 import mo.gomoku.game.Board;
 import org.apache.commons.lang3.Validate;
@@ -53,7 +52,7 @@ public class MctsAlphaCore {
 		}
 		NDArray actsArr = manager.create(acts);
 		NDArray visitsArr = manager.create(visits);
-		visitsArr = visitsArr.add(1e-10).log().mul(1 / MctsParameter.MCTS_TEMP).softmax(-1).toType(DataType.FLOAT32, false);
+		visitsArr = visitsArr.add(1e-10f).log().mul(1 / MctsParameter.MCTS_TEMP).softmax(-1);
 		return new Tuple<>(actsArr, visitsArr);
 	}
 

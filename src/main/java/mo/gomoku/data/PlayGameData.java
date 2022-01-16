@@ -21,7 +21,7 @@ public class PlayGameData {
 		int size = states.size();
 		this.datas = new ArrayList<>(size);
 		for (int i = 0; i < size; i++) {
-			this.datas.add(new SampleData(states.get(i), mctsProbs.get(1), winners[i]));
+			this.datas.add(new SampleData(states.get(i), mctsProbs.get(i), winners[i]));
 		}
 	}
 
