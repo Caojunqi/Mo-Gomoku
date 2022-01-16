@@ -1,6 +1,7 @@
 package mo.gomoku.mcts;
 
 import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.DataType;
 import mo.gomoku.common.Tuple;
 import mo.gomoku.game.Board;
@@ -31,10 +32,11 @@ public class MctsAlphaCore {
 	 * Run all playouts sequentially and return the available actions and
 	 * their corresponding probabilities.
 	 *
+	 * @param manager
 	 * @param gameEnv the current game state
 	 * @return
 	 */
-	public Tuple<NDArray, NDArray> getMoveProbs(Board gameEnv) {
+	public Tuple<NDArray, NDArray> getMoveProbs(NDManager manager, Board gameEnv) {
 		for (int i = 0; i < MctsParameter.N_PLAYOUT; i++) {
 			Board gameEnvCopy = gameEnv.deepCopy();
 			playout(gameEnvCopy);
@@ -49,8 +51,8 @@ public class MctsAlphaCore {
 			acts[i] = entry.getKey();
 			visits[i] = entry.getValue().getVisits();
 		}
-		NDArray actsArr = MctsSingleton.TEMP_MANAGER.create(acts);
-		NDArray visitsArr = MctsSingleton.TEMP_MANAGER.create(visits);
+		NDArray actsArr = manager.create(acts);
+		NDArray visitsArr = manager.create(visits);
 		visitsArr = visitsArr.add(1e-10).log().mul(1 / MctsParameter.MCTS_TEMP).softmax(-1).toType(DataType.FLOAT32, false);
 		return new Tuple<>(actsArr, visitsArr);
 	}

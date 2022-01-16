@@ -1,11 +1,11 @@
 package mo.gomoku.game;
 
 import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.DataType;
 import ai.djl.ndarray.types.Shape;
 import mo.gomoku.common.Tuple;
 import mo.gomoku.gui.GomokuBoardPane;
-import mo.gomoku.mcts.MctsSingleton;
 import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
@@ -71,7 +71,6 @@ public class Board {
 		this.curPlayerId = 0;
 		this.turns = 0;
 		this.lastMove = -1;
-		MctsSingleton.resetTempManager();
 	}
 
 	public void render() {
@@ -92,9 +91,11 @@ public class Board {
 	}
 
 	/**
+	 * @param tempManager   用于绑定临时数组资源的管理器
+	 * @param attachManager 用于绑定最终状态数组的管理器
 	 * @return 构建并返回当前棋盘状态
 	 */
-	public NDArray getCurState() {
+	public NDArray getCurState(NDManager tempManager, NDManager attachManager) {
 		float[][] curPositions = new float[GRID_LENGTH][GRID_LENGTH];
 		float[][] oppoPositions = new float[GRID_LENGTH][GRID_LENGTH];
 		float[][] lastMove = new float[GRID_LENGTH][GRID_LENGTH];
@@ -117,19 +118,19 @@ public class Board {
 
 		NDArray colourArr;
 		if (this.chessInfo.size() % 2 == 0) {
-			colourArr = MctsSingleton.TEMP_MANAGER.ones(new Shape(1, GRID_LENGTH, GRID_LENGTH), DataType.FLOAT32);
+			colourArr = tempManager.ones(new Shape(1, GRID_LENGTH, GRID_LENGTH), DataType.FLOAT32);
 		} else {
-			colourArr = MctsSingleton.TEMP_MANAGER.zeros(new Shape(1, GRID_LENGTH, GRID_LENGTH), DataType.FLOAT32);
+			colourArr = tempManager.zeros(new Shape(1, GRID_LENGTH, GRID_LENGTH), DataType.FLOAT32);
 		}
 
-		NDArray curPositionArr = MctsSingleton.TEMP_MANAGER.create(curPositions).expandDims(0);
-		NDArray oppoPositionArr = MctsSingleton.TEMP_MANAGER.create(oppoPositions).expandDims(0);
-		NDArray lastMoveArr = MctsSingleton.TEMP_MANAGER.create(lastMove).expandDims(0);
+		NDArray curPositionArr = tempManager.create(curPositions).expandDims(0);
+		NDArray oppoPositionArr = tempManager.create(oppoPositions).expandDims(0);
+		NDArray lastMoveArr = tempManager.create(lastMove).expandDims(0);
 		NDArray result = curPositionArr.
 				concat(oppoPositionArr, 0).
 				concat(lastMoveArr, 0).
 				concat(colourArr, 0);
-		result.attach(MctsSingleton.SAMPLE_MANAGER);
+		result.attach(attachManager);
 		return result;
 	}
 

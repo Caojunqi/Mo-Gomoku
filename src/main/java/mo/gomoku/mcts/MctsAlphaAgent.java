@@ -2,6 +2,7 @@ package mo.gomoku.mcts;
 
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
+import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.index.NDIndex;
 import ai.djl.ndarray.types.DataType;
 import ai.djl.ndarray.types.Shape;
@@ -33,17 +34,19 @@ public class MctsAlphaAgent implements IAgent {
 		this.trainer = trainer;
 
 		Function<Board, Tuple<Map<Integer, Float>, Float>> policyValueFn = board -> {
-			NDArray state = board.getCurState().expandDims(0);
-			NDList netResult = this.trainer.forward(new NDList(state));
-			NDArray logActProbs = netResult.get(0);
-			NDArray value = netResult.get(1);
-			float[] allActProbs = logActProbs.exp().toFloatArray();
-			List<Integer> availables = board.getAvailables();
-			Map<Integer, Float> actProbs = new HashMap<>(availables.size());
-			for (int available : availables) {
-				actProbs.put(available, allActProbs[available]);
+			try (NDManager subManager = MctsSingleton.TEMP_MANAGER.newSubManager()) {
+				NDArray state = board.getCurState(subManager, subManager).expandDims(0);
+				NDList netResult = this.trainer.forward(new NDList(state));
+				NDArray logActProbs = netResult.get(0);
+				NDArray value = netResult.get(1);
+				float[] allActProbs = logActProbs.exp().toFloatArray();
+				List<Integer> availables = board.getAvailables();
+				Map<Integer, Float> actProbs = new HashMap<>(availables.size());
+				for (int available : availables) {
+					actProbs.put(available, allActProbs[available]);
+				}
+				return new Tuple<>(actProbs, value.getFloat());
 			}
-			return new Tuple<>(actProbs, value.getFloat());
 		};
 		this.core = new MctsAlphaCore(policyValueFn);
 	}
@@ -55,32 +58,34 @@ public class MctsAlphaAgent implements IAgent {
 	}
 
 	public Tuple<Integer, NDArray> chooseAction(Board board, boolean training) {
-		Tuple<NDArray, NDArray> actProbs = this.core.getMoveProbs(board);
-		NDArray moveProbs = MctsSingleton.TEMP_MANAGER.zeros(new Shape(Board.NUM_SQUARES));
-		int availableActionSize = board.getAvailables().size();
-		for (int i = 0; i < availableActionSize; i++) {
-			moveProbs.set(new NDIndex(actProbs.first.getInt(i)), actProbs.second.getFloat(i));
+		try (NDManager actionManager = MctsSingleton.TEMP_MANAGER.newSubManager()) {
+			Tuple<NDArray, NDArray> actProbs = this.core.getMoveProbs(actionManager, board);
+			NDArray moveProbs = actionManager.zeros(new Shape(Board.NUM_SQUARES));
+			int availableActionSize = board.getAvailables().size();
+			for (int i = 0; i < availableActionSize; i++) {
+				moveProbs.set(new NDIndex(actProbs.first.getInt(i)), actProbs.second.getFloat(i));
+			}
+			int action;
+			if (training) {
+				NDArray ndArr = actionManager.ones(new Shape(availableActionSize), DataType.FLOAT64);
+				ndArr.muli(0.3);
+				DenseVector denseVector = new DenseVector(ndArr.toDoubleArray());
+				Dirichlet dirichlet = new Dirichlet(denseVector);
+				List<Vec> dirichletSample = dirichlet.sample(1, MctsSingleton.RANDOM);
+				double[] dirichletResult = dirichletSample.get(0).arrayCopy();
+				NDArray dirichletRandomArr = actionManager.create(dirichletResult).toType(DataType.FLOAT32, false);
+				NDArray finalActProbs = actProbs.second.mul(0.75).add(dirichletRandomArr.mul(0.25));
+				int actionIndex = GomokuUtils.sampleMultinomial(finalActProbs);
+				action = actProbs.first.get(actionIndex).getInt();
+				this.core.updateWithMove(action);
+			} else {
+				int actionIndex = GomokuUtils.sampleMultinomial(actProbs.second);
+				action = actProbs.first.get(actionIndex).getInt();
+				this.core.updateWithMove(-1);
+			}
+			moveProbs.attach(MctsSingleton.SAMPLE_MANAGER);
+			return new Tuple<>(action, moveProbs);
 		}
-		int action;
-		if (training) {
-			NDArray ndArr = MctsSingleton.TEMP_MANAGER.ones(new Shape(availableActionSize), DataType.FLOAT64);
-			ndArr.muli(0.3);
-			DenseVector denseVector = new DenseVector(ndArr.toDoubleArray());
-			Dirichlet dirichlet = new Dirichlet(denseVector);
-			List<Vec> dirichletSample = dirichlet.sample(1, MctsSingleton.RANDOM);
-			double[] dirichletResult = dirichletSample.get(0).arrayCopy();
-			NDArray dirichletRandomArr = MctsSingleton.TEMP_MANAGER.create(dirichletResult).toType(DataType.FLOAT32, false);
-			NDArray finalActProbs = actProbs.second.mul(0.75).add(dirichletRandomArr.mul(0.25));
-			int actionIndex = GomokuUtils.sampleMultinomial(finalActProbs);
-			action = actProbs.first.get(actionIndex).getInt();
-			this.core.updateWithMove(action);
-		} else {
-			int actionIndex = GomokuUtils.sampleMultinomial(actProbs.second);
-			action = actProbs.first.get(actionIndex).getInt();
-			this.core.updateWithMove(-1);
-		}
-		moveProbs.attach(MctsSingleton.SAMPLE_MANAGER);
-		return new Tuple<>(action, moveProbs);
 	}
 
 	/**
