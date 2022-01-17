@@ -19,7 +19,9 @@ import mo.gomoku.data.PlayGameData;
 import mo.gomoku.data.SampleData;
 import mo.gomoku.game.Board;
 import mo.gomoku.game.Game;
+import mo.gomoku.util.GomokuUtils;
 import mo.gomoku.util.ModelBuilder;
+import org.apache.commons.lang3.Validate;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +54,7 @@ public class MctsTrainer {
 
 	public void run() {
 		for (int i = 0; i < MctsParameter.GAME_BATCH_NUM; i++) {
+			System.out.println("batch i:" + (i + 1));
 			collectSelfplayData();
 			if (this.dataBuffer.size() > MctsParameter.BATCH_SIZE) {
 				Triple<NDArray, NDArray, NDArray> miniBatch = this.dataBuffer.randomSample(MctsParameter.BATCH_SIZE);
@@ -60,6 +63,7 @@ public class MctsTrainer {
 			}
 			if ((i + 1) % MctsParameter.CHECK_FREQ == 0) {
 				float winRatio = policyEvaluate();
+				System.out.println("模型性能检测，对手搜索深度[" + this.pureMctsPlayoutNum + "]，胜率[" + winRatio + "]");
 				if (winRatio > this.bestWinRatio) {
 					this.bestWinRatio = winRatio;
 					// update the best policy
@@ -72,6 +76,7 @@ public class MctsTrainer {
 				}
 			}
 		}
+		System.out.println("训练结束！！！");
 	}
 
 	private void trainBatch(NDArray stateBatch, NDArray mctsProbsBatch, NDArray winnerBatch) {
@@ -88,15 +93,18 @@ public class MctsTrainer {
 			NDArray oldActProbs = oldLogActProbs.duplicate().exp();
 			NDArray oldValue = oldNetResult.get(1).duplicate();
 
+			NDArray newValue = null;
+			float loss = 0;
+			float entropy = 0;
 			float kl = 0;
 			for (int i = 0; i < MctsParameter.EPOCHS; i++) {
 				Tuple<Float, Float> trainStepResult = trainStep(stateBatch, mctsProbsBatch, winnerBatch);
-				float loss = trainStepResult.first;
-				float entropy = trainStepResult.second;
+				loss = trainStepResult.first;
+				entropy = trainStepResult.second;
 				NDList newNetResult = this.trainer.forward(new NDList(stateBatch));
 				NDArray newLogActProbs = newNetResult.get(0);
 				NDArray newActProbs = newLogActProbs.duplicate().exp();
-				NDArray newValue = newNetResult.get(1).duplicate();
+				newValue = newNetResult.get(1).duplicate();
 
 				kl = oldActProbs.add(1e-10).log().sub(newActProbs.add(1e-10).log())
 						.mul(oldActProbs)
@@ -117,7 +125,13 @@ public class MctsTrainer {
 			}
 			this.tracker.setLrMultiplier(lrMultiplier);
 
-			// TODO 此处还有一些统计信息
+			// log print
+			Validate.notNull(newValue);
+			float explainedVarOld = 1 - GomokuUtils.calVariance(winnerBatch.sub(oldValue.flatten())) / GomokuUtils.calVariance(winnerBatch);
+			float explainedVarNew = 1 - GomokuUtils.calVariance(winnerBatch.sub(newValue.flatten())) / GomokuUtils.calVariance(winnerBatch);
+			String log = String.format("kl:%.5f,lr_multiplier:%.3f,loss:%f,entropy:%f,explained_var_old:%.3f,explained_var_new:%.3f",
+					kl, lrMultiplier, loss, entropy, explainedVarOld, explainedVarNew);
+			System.out.println(log);
 		}
 	}
 

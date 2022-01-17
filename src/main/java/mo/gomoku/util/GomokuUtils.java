@@ -35,4 +35,14 @@ public final class GomokuUtils {
 
 		throw new IllegalArgumentException("Invalid multinomial distribution");
 	}
+
+	/**
+	 * 计算数组的方差
+	 */
+	public static float calVariance(NDArray array) {
+		Validate.isTrue(array.getShape().dimension() == 1, "计算数组方差前，应该把数组转换成一维的！！");
+		int n = (int) array.size();
+		NDArray mean = array.mean();
+		return array.sub(mean).pow(2).div(n).sum().getFloat();
+	}
 }
