@@ -4,6 +4,7 @@ import ai.djl.Model;
 import ai.djl.engine.Engine;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
+import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.GradientCollector;
@@ -74,41 +75,50 @@ public class MctsTrainer {
 	}
 
 	private void trainBatch(NDArray stateBatch, NDArray mctsProbsBatch, NDArray winnerBatch) {
-		NDList oldNetResult = this.trainer.forward(new NDList(stateBatch));
-		NDArray oldLogActProbs = oldNetResult.get(0);
-		NDArray oldActProbs = oldLogActProbs.duplicate().exp();
-		NDArray oldValue = oldNetResult.get(1).duplicate();
+		try (NDManager subManager = MctsSingleton.TEMP_MANAGER.newSubManager()) {
+			stateBatch = stateBatch.duplicate();
+			mctsProbsBatch = mctsProbsBatch.duplicate();
+			winnerBatch = winnerBatch.duplicate();
+			stateBatch.attach(subManager);
+			mctsProbsBatch.attach(subManager);
+			winnerBatch.attach(subManager);
 
-		float kl = 0;
-		for (int i = 0; i < MctsParameter.EPOCHS; i++) {
-			Tuple<Float, Float> trainStepResult = trainStep(stateBatch, mctsProbsBatch, winnerBatch);
-			float loss = trainStepResult.first;
-			float entropy = trainStepResult.second;
-			NDList newNetResult = this.trainer.forward(new NDList(stateBatch));
-			NDArray newLogActProbs = newNetResult.get(0);
-			NDArray newActProbs = newLogActProbs.duplicate().exp();
-			NDArray newValue = newNetResult.get(1).duplicate();
+			NDList oldNetResult = this.trainer.forward(new NDList(stateBatch));
+			NDArray oldLogActProbs = oldNetResult.get(0);
+			NDArray oldActProbs = oldLogActProbs.duplicate().exp();
+			NDArray oldValue = oldNetResult.get(1).duplicate();
 
-			kl = oldActProbs.add(1e-10).log().sub(newActProbs.add(1e-10).log())
-					.mul(oldActProbs)
-					.sum(new int[]{1})
-					.mean().getFloat();
-			if (kl > MctsParameter.KL_TARG * 4) {
-				// early stopping if D_KL diverges badly
-				break;
+			float kl = 0;
+			for (int i = 0; i < MctsParameter.EPOCHS; i++) {
+				Tuple<Float, Float> trainStepResult = trainStep(stateBatch, mctsProbsBatch, winnerBatch);
+				float loss = trainStepResult.first;
+				float entropy = trainStepResult.second;
+				NDList newNetResult = this.trainer.forward(new NDList(stateBatch));
+				NDArray newLogActProbs = newNetResult.get(0);
+				NDArray newActProbs = newLogActProbs.duplicate().exp();
+				NDArray newValue = newNetResult.get(1).duplicate();
+
+				kl = oldActProbs.add(1e-10).log().sub(newActProbs.add(1e-10).log())
+						.mul(oldActProbs)
+						.sum(new int[]{1})
+						.mean().getFloat();
+				if (kl > MctsParameter.KL_TARG * 4) {
+					// early stopping if D_KL diverges badly
+					break;
+				}
 			}
-		}
 
-		// adaptively adjust the learning rate
-		float lrMultiplier = this.tracker.getLrMultiplier();
-		if (kl > MctsParameter.KL_TARG * 2 && lrMultiplier > 0.1) {
-			lrMultiplier /= 1.5f;
-		} else if (kl < MctsParameter.KL_TARG / 2 && lrMultiplier < 10) {
-			lrMultiplier *= 1.5f;
-		}
-		this.tracker.setLrMultiplier(lrMultiplier);
+			// adaptively adjust the learning rate
+			float lrMultiplier = this.tracker.getLrMultiplier();
+			if (kl > MctsParameter.KL_TARG * 2 && lrMultiplier > 0.1) {
+				lrMultiplier /= 1.5f;
+			} else if (kl < MctsParameter.KL_TARG / 2 && lrMultiplier < 10) {
+				lrMultiplier *= 1.5f;
+			}
+			this.tracker.setLrMultiplier(lrMultiplier);
 
-		// TODO 此处还有一些统计信息
+			// TODO 此处还有一些统计信息
+		}
 	}
 
 	private void saveModel() {
