@@ -59,7 +59,7 @@ public class MctsTrainer {
 			if (this.dataBuffer.size() > MctsParameter.BATCH_SIZE) {
 				Triple<NDArray, NDArray, NDArray> miniBatch = this.dataBuffer.randomSample(MctsParameter.BATCH_SIZE);
 				trainBatch(miniBatch.first, miniBatch.second, miniBatch.third);
-				this.dataBuffer.clear();
+//				this.dataBuffer.clear();
 			}
 			if ((i + 1) % MctsParameter.CHECK_FREQ == 0) {
 				float winRatio = policyEvaluate();
@@ -212,12 +212,13 @@ public class MctsTrainer {
 	}
 
 	private float policyEvaluate() {
+		MctsAlphaAgent alphaAgent = new MctsAlphaAgent(this.trainer);
 		MctsPureAgent pureAgent = new MctsPureAgent(this.pureMctsPlayoutNum);
 		int winNum = 0;
 		int tieNum = 0;
 		for (int i = 0; i < MctsParameter.POLICY_EVALUATE_GAMES; i++) {
 			boolean alphaFirst = i % 2 == 0;
-			int winner = this.game.startEvaluatePlay(this.agent, pureAgent, alphaFirst);
+			int winner = this.game.startEvaluatePlay(alphaAgent, pureAgent, alphaFirst);
 			if (winner == -1) {
 				tieNum++;
 			} else {
