@@ -70,7 +70,6 @@ public class DataBuffer {
 	}
 
 	public void clear() {
-		System.out.println("开始清空样本====" + this.datas.size());
 		for (SampleData data : this.datas) {
 			data.close();
 		}
