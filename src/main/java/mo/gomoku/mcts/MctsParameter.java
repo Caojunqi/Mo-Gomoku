@@ -16,10 +16,10 @@ public final class MctsParameter {
 	 * a number in (0, inf) controlling the relative impact of value {@link TreeNode} Q, and {@link TreeNode} prior probability on this node's score.
 	 */
 	public static final int C_PUCT = 5;
-	/**
-	 * temperature parameter in (0,1] controls the level of exploration in MCTS
-	 */
-	public static final float MCTS_TEMP = 1.0f;
+
+	public static final float TRAIN_MCTS_TEMP = 1.0f;
+
+	public static final float EVALUATE_MCTS_TEMP = 1e-3f;
 
 	public static final float LEARN_RATE = 2e-3f;
 

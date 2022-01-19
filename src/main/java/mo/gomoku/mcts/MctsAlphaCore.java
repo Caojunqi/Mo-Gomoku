@@ -33,9 +33,10 @@ public class MctsAlphaCore {
 	 *
 	 * @param manager
 	 * @param gameEnv the current game state
+	 * @param temp    temperature parameter in (0,1] controls the level of exploration in MCTS
 	 * @return
 	 */
-	public Tuple<NDArray, NDArray> getMoveProbs(NDManager manager, Board gameEnv) {
+	public Tuple<NDArray, NDArray> getMoveProbs(NDManager manager, Board gameEnv, float temp) {
 		for (int i = 0; i < MctsParameter.N_PLAYOUT; i++) {
 			Board gameEnvCopy = gameEnv.deepCopy();
 			playout(gameEnvCopy);
@@ -52,7 +53,7 @@ public class MctsAlphaCore {
 		}
 		NDArray actsArr = manager.create(acts);
 		NDArray visitsArr = manager.create(visits);
-		visitsArr = visitsArr.add(1e-10f).log().mul(1 / MctsParameter.MCTS_TEMP).softmax(-1);
+		visitsArr = visitsArr.add(1e-10f).log().mul(1 / temp).softmax(-1);
 		return new Tuple<>(actsArr, visitsArr);
 	}
 

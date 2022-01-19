@@ -59,7 +59,8 @@ public class MctsAlphaAgent implements IAgent {
 
 	public Tuple<Integer, NDArray> chooseAction(Board board, boolean training) {
 		try (NDManager actionManager = MctsSingleton.TEMP_MANAGER.newSubManager()) {
-			Tuple<NDArray, NDArray> actProbs = this.core.getMoveProbs(actionManager, board);
+			float temp = training ? MctsParameter.TRAIN_MCTS_TEMP : MctsParameter.EVALUATE_MCTS_TEMP;
+			Tuple<NDArray, NDArray> actProbs = this.core.getMoveProbs(actionManager, board, temp);
 			NDArray moveProbs = actionManager.zeros(new Shape(Board.NUM_SQUARES));
 			int availableActionSize = board.getAvailables().size();
 			for (int i = 0; i < availableActionSize; i++) {
