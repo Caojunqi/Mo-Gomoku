@@ -1,5 +1,6 @@
 package mo.gomoku.mcts;
 
+import ai.djl.Device;
 import ai.djl.Model;
 import ai.djl.engine.Engine;
 import ai.djl.ndarray.NDArray;
@@ -82,13 +83,16 @@ public class MctsTrainer {
 	}
 
 	private void trainBatch(NDArray stateBatch, NDArray mctsProbsBatch, NDArray winnerBatch) {
-		try (NDManager subManager = MctsSingleton.TEMP_MANAGER.newSubManager()) {
+		try (NDManager subManager = MctsSingleton.NET_MANAGER.newSubManager()) {
 			stateBatch = stateBatch.duplicate();
 			mctsProbsBatch = mctsProbsBatch.duplicate();
 			winnerBatch = winnerBatch.duplicate();
 			stateBatch.attach(subManager);
 			mctsProbsBatch.attach(subManager);
 			winnerBatch.attach(subManager);
+			stateBatch = stateBatch.toDevice(MctsSingleton.QUICK_DEVICE, false);
+			mctsProbsBatch = mctsProbsBatch.toDevice(MctsSingleton.QUICK_DEVICE, false);
+			winnerBatch = winnerBatch.toDevice(MctsSingleton.QUICK_DEVICE, false);
 
 			NDList oldNetResult = this.trainer.forward(new NDList(stateBatch));
 			NDArray oldLogActProbs = oldNetResult.get(0);
@@ -175,7 +179,8 @@ public class MctsTrainer {
 			model = ModelBuilder.buildBaseModel();
 		}
 		TrainingConfig config = new DefaultTrainingConfig(Loss.l2Loss())
-				.optOptimizer(Adam.builder().optLearningRateTracker(this.tracker).optWeightDecays(MctsParameter.L2_CONST).build());
+				.optOptimizer(Adam.builder().optLearningRateTracker(this.tracker).optWeightDecays(MctsParameter.L2_CONST).build())
+				.optDevices(new Device[]{MctsSingleton.QUICK_DEVICE});
 		Trainer trainer = model.newTrainer(config);
 		trainer.initialize(board.getStateShape());
 		trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));

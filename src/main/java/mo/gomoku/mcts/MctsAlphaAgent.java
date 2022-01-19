@@ -34,7 +34,7 @@ public class MctsAlphaAgent implements IAgent {
 		this.trainer = trainer;
 
 		Function<Board, Tuple<Map<Integer, Float>, Float>> policyValueFn = board -> {
-			try (NDManager subManager = MctsSingleton.TEMP_MANAGER.newSubManager()) {
+			try (NDManager subManager = MctsSingleton.NET_MANAGER.newSubManager()) {
 				NDArray state = board.getCurState(subManager, subManager).expandDims(0);
 				NDList netResult = this.trainer.forward(new NDList(state));
 				NDArray logActProbs = netResult.get(0);
