@@ -63,11 +63,13 @@ public class MctsTrainer {
 			}
 			if ((i + 1) % MctsParameter.CHECK_FREQ == 0) {
 				float winRatio = policyEvaluate();
+				// update the current policy
+				saveModel(MctsParameter.CURRENT_MODEL_PREFIX);
 				System.out.println("模型性能检测，对手搜索深度[" + this.pureMctsPlayoutNum + "]，胜率[" + winRatio + "]");
 				if (winRatio > this.bestWinRatio) {
 					this.bestWinRatio = winRatio;
 					// update the best policy
-					saveModel();
+					saveModel(MctsParameter.BEST_MODEL_PREFIX);
 					System.out.println("新模型诞生，对手搜索深度[" + this.pureMctsPlayoutNum + "]，胜率[" + winRatio + "]");
 					if (this.bestWinRatio == 1.0 && this.pureMctsPlayoutNum < MctsParameter.MAX_PURE_MCTS_PLAYOUT_NUM) {
 						this.pureMctsPlayoutNum += 1000;
@@ -135,14 +137,16 @@ public class MctsTrainer {
 		}
 	}
 
-	private void saveModel() {
+	private void saveModel(String modelPrefix) {
 		try {
 			String fullDir = MctsParameter.MODEL_DIR +
 					MctsParameter.GAME_NAME +
+					MctsParameter.DIR_SEPARATOR +
+					modelPrefix +
 					MctsParameter.DIR_SEPARATOR;
 			File modelFile = new File(fullDir);
 			Path path = modelFile.toPath();
-			this.trainer.getModel().save(path, MctsParameter.BEST_MODEL_PREFIX);
+			this.trainer.getModel().save(path, modelPrefix);
 		} catch (IOException e) {
 			throw new IllegalStateException("Best Model Save Error!!" + e);
 		}
@@ -166,7 +170,7 @@ public class MctsTrainer {
 	}
 
 	private Trainer buildTrainer(Board board) {
-		Model model = ModelBuilder.buildBestModel();
+		Model model = ModelBuilder.buildPretrainedModel(MctsParameter.CURRENT_MODEL_PREFIX);
 		if (model == null) {
 			model = ModelBuilder.buildBaseModel();
 		}

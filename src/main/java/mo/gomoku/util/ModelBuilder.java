@@ -20,10 +20,13 @@ import java.util.List;
 public final class ModelBuilder {
 
 	/**
-	 * 从训练好的模型中选出最好的模型
+	 * 构建预训练好的模型
+	 *
+	 * @param modelPrefix 模型名称前缀
 	 */
-	public static Model buildBestModel() {
-		File modelDir = new File(MctsParameter.MODEL_DIR + MctsParameter.GAME_NAME + MctsParameter.DIR_SEPARATOR);
+	public static Model buildPretrainedModel(String modelPrefix) {
+		String modelDirStr = MctsParameter.MODEL_DIR + MctsParameter.GAME_NAME + MctsParameter.DIR_SEPARATOR + modelPrefix + MctsParameter.DIR_SEPARATOR;
+		File modelDir = new File(modelDirStr);
 		Collection<File> modelFiles = FileUtils.listFiles(modelDir, null, true);
 		if (modelFiles.isEmpty()) {
 			return null;
@@ -31,14 +34,15 @@ public final class ModelBuilder {
 		List<File> sortedFiles = new ArrayList<>(modelFiles);
 		sortedFiles.sort(Comparator.comparing(File::getName));
 		try {
-			File bestModelFileDir = new File(MctsParameter.MODEL_DIR + MctsParameter.GAME_NAME + MctsParameter.DIR_SEPARATOR);
+			File bestModelFileDir = new File(modelDirStr);
 			Model bestModel = buildBaseModel();
-			bestModel.load(bestModelFileDir.toPath(), MctsParameter.BEST_MODEL_PREFIX, null);
+			bestModel.load(bestModelFileDir.toPath(), modelPrefix, null);
 			return bestModel;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
+
 
 	/**
 	 * 构建一个参数随机的模型

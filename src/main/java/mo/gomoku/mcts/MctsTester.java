@@ -91,7 +91,7 @@ public class MctsTester {
 	 * 构建对手
 	 */
 	private void setupOpponents() {
-		Model opponentModel = ModelBuilder.buildBestModel();
+		Model opponentModel = ModelBuilder.buildPretrainedModel(MctsParameter.BEST_MODEL_PREFIX);
 		Validate.notNull(opponentModel, "没有训练好的模型，不能进行性能测试");
 		TrainingConfig config = new DefaultTrainingConfig(Loss.l2Loss());
 		Trainer trainer = opponentModel.newTrainer(config);

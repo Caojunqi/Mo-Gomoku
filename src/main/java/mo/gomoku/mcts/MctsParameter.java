@@ -54,6 +54,8 @@ public final class MctsParameter {
 
 	public static final String MODEL_DIR = "src/main/resources/model/";
 
+	public static final String CURRENT_MODEL_PREFIX = "current";
+
 	public static final String BEST_MODEL_PREFIX = "best";
 	/**
 	 * 文件夹分隔符
