@@ -29,11 +29,11 @@ public final class MctsParameter {
 	 */
 	public static final float L2_CONST = 1e-4f;
 
-	public static final int GAME_BATCH_NUM = 1500;
+	public static final int GAME_BATCH_NUM = 1500000;
 
 	public static final int PLAY_BATCH_SIZE = 1;
 
-	public static final int BUFFER_SIZE = 1000;
+	public static final int BUFFER_SIZE = 10000;
 
 	public static final int BATCH_SIZE = 512;
 	/**
