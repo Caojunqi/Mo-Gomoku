@@ -65,7 +65,7 @@ public class MctsTrainer {
 				float winRatio = policyEvaluate();
 				// update the current policy
 				saveModel(MctsParameter.CURRENT_MODEL_PREFIX);
-				System.out.println("模型性能检测，对手搜索深度[" + this.pureMctsPlayoutNum + "]，胜率[" + winRatio + "]");
+				System.out.println("模型性能检测，对手搜索深度[" + this.pureMctsPlayoutNum + "]，胜率[" + winRatio + "]" + "，当前最高胜率[" + this.bestWinRatio + "]");
 				if (winRatio > this.bestWinRatio) {
 					this.bestWinRatio = winRatio;
 					// update the best policy
