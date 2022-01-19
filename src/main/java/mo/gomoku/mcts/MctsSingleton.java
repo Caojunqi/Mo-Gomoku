@@ -22,6 +22,14 @@ public class MctsSingleton {
 	 */
 	public static Random RANDOM = new Random(0);
 	/**
+	 * 是否启用GPU加速
+	 */
+	private static boolean GPU_QUICK = true;
+	/**
+	 * 模型训练放在加速设备中
+	 */
+	public static Device QUICK_DEVICE = GPU_QUICK ? Engine.getInstance().defaultDevice() : CPU_DEVICE;
+	/**
 	 * 样本数据资源管理器，所有样本数据中的数组资源均由此管理。
 	 */
 	public static NDManager SAMPLE_MANAGER = NDManager.newBaseManager(CPU_DEVICE);
@@ -33,14 +41,6 @@ public class MctsSingleton {
 	 * 神经网络资源管理类
 	 */
 	public static NDManager NET_MANAGER = NDManager.newBaseManager(QUICK_DEVICE);
-	/**
-	 * 是否启用GPU加速
-	 */
-	private static boolean GPU_QUICK = true;
-	/**
-	 * 模型训练放在加速设备中
-	 */
-	public static Device QUICK_DEVICE = GPU_QUICK ? Engine.getInstance().defaultDevice() : CPU_DEVICE;
 
 	public static void resetSampleManager() {
 		SAMPLE_MANAGER.close();
